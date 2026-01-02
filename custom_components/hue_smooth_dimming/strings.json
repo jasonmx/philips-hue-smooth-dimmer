@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "title": "Philips Hue Smooth Dimming",
-        "description": "Do you want to enable silky smooth dimming services for your Philips Hue lights?"
+        "description": "Add silky smooth dimming for your Philips Hue lights? Click submit to finish setup."
       }
     },
     "abort": {
-      "single_instance_allowed": "Only a single configuration of Hue Smooth Dimming is necessary."
+      "single_instance_allowed": "Only a single instance of Hue Smooth Dimming is needed."
     },
     "create_entry": {
-      "default": "Success! The start_transition and stop_transition actions are now available."
+      "default": "Setup complete! You will now see 'Start Transition' and 'Stop Transition' in your Actions list."
     }
   }
 }
