@@ -1,19 +1,15 @@
 # Hue Smooth Dimming
 
-**Hue Smooth Dimming** is a helper for the official Philips Hue integration that delivers **silky smooth dimming transitions** using the native Hue v2 API.
+Hue Smooth Dimming adds **silky smooth transitions** to the official Philips Hue integration on v2 Bridges, by leveraging Hue bulbs' native transition capabilities instead of relying on repeated incremental brightness change instructions from HA.
 
-A common Home Assistant frustration is jumpy/steppy dimming transitions in automations that send repeated brightness changes (e.g., +10% or -10%) every few hundreds milliseconds while a button is held. This causes visual stuttering and often results in the light "overshooting" the target, due to flooding of the Zigbee network and processing lags.
-
-**Hue Smooth Dimming** leverages the Hue bulbs' native transition capabilities, by sending a single "start" command when you press your button and a "stop" command when you release it. 
-
-The result is the same premium, high-end feel that you get using Philips Hue's own dimmers, without network congestion and lags.
+The result is the same premium, high-end feel that you get using Philips Hue's own dimmers, without visual stuttering, lags or overshoots.
 
 ## Key Benefits
 
-* **Silky Smooth UX:** No more stuttering lights and low family approval ratings. Transitions are fluid, continuous, and visually polished.
+* **Silky Smooth UX:** No more stuttering lights, overshoots and low family approval ratings. Transitions are fluid, continuous, and visually polished.
 * **Intuitive Constant Speed:** Lights move at a predictable, natural pace that mirrors the behavior of a high-quality physical dimmer. E.g. with a 5s Sweep Time, the brightness changes at 20% per second.
-* **Less Network Noise:** By sending only two commands (Start and Stop) instead of dozens of tiny updates, your Zigbee mesh remains responsive and clear.
-* **Native Integration:** No duplicate entities or secondary logins. This helper "borrows" your existing connection to the official Hue integration to target your lights directly.
+* **Less Network Load:** By sending only two commands (Start and Stop) instead of dozens of brightness changes, your Zigbee mesh remains responsive and clear.
+* **Simple setup:** This helper extends the capabilities of your existing Hue lights and groups via the core Hue integration. No secondary login is required.
 
 ---
 
@@ -60,7 +56,7 @@ action:
       entity_id: light.living_room
     data:
       direction: "up"
-      sweep_time: 4 # 4s for a full 0-100% transition
+      sweep_time: 5 # 5s for a full 0-100% transition
 ```
 
 **Automation: Stop Dimming on Release**
