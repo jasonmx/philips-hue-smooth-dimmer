@@ -1,6 +1,7 @@
 {
-  "name": "Hue Custom Dimming",
-  "content_in_root": false,
-  "zip_release": false,
-  "homeassistant": "2025.1.0"
+  "name": "Philips Hue Smooth Dimming",
+  "content_id": "hue_smooth_dimming",
+  "render_readme": true,
+  "category": "integration",
+  "homeassistant": "2024.1.0"
 }

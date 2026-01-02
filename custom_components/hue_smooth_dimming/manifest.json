@@ -1,6 +1,6 @@
 {
   "domain": "hue_smooth_dimming",
-  "name": "Hue Smooth Dimming",
+  "name": "Philips Hue Smooth Dimming",
   "version": "1.0.0",
   "config_flow": true,
   "documentation": "https://github.com/jasonmx/ha-hue-smooth-dimming",
