@@ -66,3 +66,7 @@ action:
   - service: hue_smooth_dimming.stop_transition
     target:
       entity_id: light.living_room
+```
+
+> [!TIP]
+> **Pro Tip:** For the best performance and perfect synchronization, target **Hue Groups** rather than multiple individual bulbs. This allows the Hue Bridge to send a single Zigbee broadcast, ensuring every light in the room starts and stops at the exact same moment.
