@@ -14,7 +14,7 @@ The result is the same premium, high-end feel that you get using Philips Hue's o
 
 ## Installation
 
-**Dependency:**Official HA Hue integration connected to a v2 bridge.
+**Dependency:** Official HA Hue integration connected to a v2 bridge.
 
 ### Method 1: HACS (Recommended)
 1. Open **HACS** > **Integrations**.
