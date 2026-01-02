@@ -1,4 +1,8 @@
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+
 # Philips Hue Smooth Dimming
+
+[Add this repository to HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonmx&repository=ha-hue-smooth-dimming&category=integration)
 
 Enables you to change a Hue bulb's brightness smoothly in automations and with non-Hue buttons, by leveraging Hue's native brightness transition features.
 
@@ -17,18 +21,24 @@ The result is the same premium, high-end feel that you'd get with a Philips Hue 
 **Dependency:** [Philips Hue integration](https://www.home-assistant.io/integrations/hue) connected to a V2 bridge.
 
 ### Method 1: HACS (Recommended)
-1. Open **HACS** > **Integrations**.
-2. Click the three dots (top right) > **Custom repositories**.
-3. Paste this repository URL, select **Integration** as the category, and click **Add**.
-4. Download "Hue Smooth Dimming" and **Restart Home Assistant**.
+
+1. Click the button below to open this repository in HACS:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonmx&repository=ha-hue-smooth-dimming&category=integration)
+
+2. Click **Download**, then restart Home Assistant.
+3. Go to **Settings > Devices & Services > Add Integration** and search for "Philips Hue Smooth Dimming".
 
 ### Method 2: Manual
 1. Copy the `hue_smooth_dimming` folder to your `/config/custom_components/` directory.
 2. **Restart Home Assistant.**
+3. Go to **Settings > Devices & Services > Add Integration** and search for "Philips Hue Smooth Dimming".
 
 ---
 
-## Services
+## Usage
+
+After installation, you'll find two new services available in automation Actions. You can also try them out in Developer Tools -> Actions. 
 
 ### `hue_smooth_dimming.start_transition`
 Initiates a smooth transition. This is typically mapped to a "Hold" or "Long Press" button trigger.
