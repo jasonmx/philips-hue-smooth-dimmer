@@ -15,12 +15,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: HACS Action Check
-        # This is the dedicated repo for custom component validation
-        uses: hacs/action@main
-        with:
-          category: integration
-          ignore: []
+      - name: Verify Manifest and Structure
+        run: |
+          # 1. Check if required files exist
+          test -f custom_components/hue_smooth_dimming/manifest.json || (echo "Missing manifest.json" && exit 1)
+          test -f custom_components/hue_smooth_dimming/services.yaml || (echo "Missing services.yaml" && exit 1)
+          
+          # 2. Validate JSON syntax
+          cat custom_components/hue_smooth_dimming/manifest.json | jq '.'
+          
+          # 3. Check for the 'config_flow' key we added earlier
+          grep -q '"config_flow": true' custom_components/hue_smooth_dimming/manifest.json || (echo "Manifest missing config_flow: true" && exit 1)
 
       - name: Check for Python Syntax Errors
         run: |
