@@ -2,8 +2,6 @@
 
 # Philips Hue Smooth Dimming
 
-[Add this repository to HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonmx&repository=ha-hue-smooth-dimming&category=integration)
-
 Enables you to change a Hue bulb's brightness smoothly in automations and with non-Hue buttons, by leveraging Hue's native brightness transition features.
 
 The result is the same premium, high-end feel that you'd get with a Philips Hue dimmer.
@@ -26,8 +24,9 @@ The result is the same premium, high-end feel that you'd get with a Philips Hue 
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonmx&repository=ha-hue-smooth-dimming&category=integration)
 
-2. Click **Download**, then restart Home Assistant.
-3. Go to **Settings > Devices & Services > Add Integration** and search for "Philips Hue Smooth Dimming".
+2. Click the **Download** button.
+3. Restart Home Assistant.
+4. Go to **Settings > Devices & Services > Add Integration** and search for "Philips Hue Smooth Dimming".
 
 ### Method 2: Manual
 1. Copy the `hue_smooth_dimming` folder to your `/config/custom_components/` directory.
@@ -38,7 +37,7 @@ The result is the same premium, high-end feel that you'd get with a Philips Hue 
 
 ## Usage
 
-After installation, you'll find two new services available in automation Actions. You can also try them out in Developer Tools -> Actions. 
+After installation, you'll find two new services available in the automation Actions list. You can also try them out in Developer Tools -> Actions. 
 
 ### `hue_smooth_dimming.start_transition`
 Initiates a smooth transition. This is typically mapped to a "Hold" or "Long Press" button trigger.
