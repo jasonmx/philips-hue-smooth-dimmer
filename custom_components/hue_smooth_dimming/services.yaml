@@ -15,7 +15,7 @@ start_transition:
     sweep_time:
       name: Sweep Time
       description: Time taken to go from 0% to 100%.
-      default: 5
+      default: 4
       selector:
         number:
           min: 1
