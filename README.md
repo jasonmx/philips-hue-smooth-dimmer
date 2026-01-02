@@ -1,14 +1,14 @@
 # Hue Smooth Dimming
 
-Hue Smooth Dimming adds **silky smooth dimming transitions** to the official Philips Hue integration, by leveraging Hue bulbs' native transition capabilities instead of relying on repeated incremental brightness change instructions from Home Assistant.
+Adds silky smooth brightness transitions to Philips Hue bulbs being controlled by automations and non-Hue buttons, by leveraging Hue bulbs' native transition capabilities.
 
-The result is the same premium, high-end feel that you get using Philips Hue's own dimmers, without visual stuttering, lags or overshoots.
+The result is the same premium, high-end feel that you'd get with a Philips Hue dimmer.
 
 ## Key Benefits 🔅💡🔆
 
-* **Silky Smooth:** No more stuttering lights, overshoots and low family approval ratings. Transitions are predictable, continuous and visually polished, mirroring the behavior of a high-quality physical dimmer.
+* **Silky Smooth:** No more visual stuttering, overshoots and low family approval ratings when using "press to dim, release to stop" automations. Brightness transitions are predictable, continuous and visually polished, mirroring the behavior of a high-quality physical dimmer.
 * **Network Friendly:** By sending only two commands (Start and Stop) instead of dozens of brightness changes, your home LAN and Hue meshes remain responsive and clear.
-* **Simple Setup:** This helper extends the capabilities of your existing Hue lights and groups via the core Hue integration. No secondary login is required.
+* **Simple Setup:** This helper extends the capabilities of your existing Hue lights and groups on the core Hue integration. No secondary login is required.
 
 ---
 
