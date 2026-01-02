@@ -1,6 +1,26 @@
-- name: Basic Manifest Validation
+name: Validate Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: HomeAssistant Helper Check
+        uses: home-assistant/actions/helpers/custom_components@master
+        with:
+          command: validate
+          integration: hue_smooth_dimming
+
+      - name: Check for Python Syntax Errors
         run: |
-          # Verifies manifest.json is valid JSON and has required keys
-          jq '.' custom_components/hue_smooth_dimming/manifest.json
-          grep -q '"domain"' custom_components/hue_smooth_dimming/manifest.json
-          grep -q '"version"' custom_components/hue_smooth_dimming/manifest.json
+          python3 -m py_compile custom_components/hue_smooth_dimming/*.py
