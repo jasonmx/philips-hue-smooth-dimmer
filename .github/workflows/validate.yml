@@ -1,0 +1,23 @@
+name: Validate Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Home Assistant Integration Quality Check
+        uses: home-assistant/actions/helpers/integration-validate@master
+        with:
+          integration: hue_smooth_dimming
+
+      - name: Check for Python Syntax Errors
+        run: |
+          python3 -m py_compile custom_components/hue_smooth_dimming/*.py
