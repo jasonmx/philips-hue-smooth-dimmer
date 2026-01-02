@@ -13,9 +13,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Home Assistant Integration Quality Check
-        uses: home-assistant/actions/helpers/integration-validate@master
+      - name: HomeAssistant Helper Check
+        # Using the updated, dedicated repository for this action
+        uses: home-assistant/actions/helpers/custom_components@master
         with:
+          command: validate
           integration: hue_smooth_dimming
 
       - name: Check for Python Syntax Errors
