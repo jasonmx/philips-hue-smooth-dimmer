@@ -1,0 +1,62 @@
+raise:
+  name: Raise
+  description: Start increasing brightness.
+  target:
+    entity:
+      domain: light
+  fields:
+    sweep_time:
+      name: Sweep Time
+      description: Duration of a full 100-0% transition.
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: s
+    limit:
+      name: Target Brightness
+      description: Default is 100%.
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+
+lower:
+  name: Lower
+  description: Start decreasing brightness.
+  target:
+    entity:
+      domain: light
+  fields:
+    sweep_time:
+      name: Sweep Time
+      description: Duration of a full 0-100% transition.
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: s
+    limit:
+      name: Target Brightness
+      description: Default is 0%.
+      selector:
+        number:
+          min: 0
+          max: 99
+          unit_of_measurement: "%"
+turn_off_at_zero:
+      name: Off at zero
+      description: Turn off the light if a transition reaches 0% brightness.
+      default: false
+      selector:
+        boolean:
+
+stop:
+  name: Stop
+  description: Stop brightness transitions.
+  target:
+    entity:
+      domain: light

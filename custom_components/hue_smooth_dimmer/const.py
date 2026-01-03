@@ -1,0 +1,7 @@
+DOMAIN = "hue_smooth_dimmer"
+DEFAULT_SWEEP_TIME = 4
+STALE_BRIGHTNESS_GUARD_SECONDS = 15
+
+SERVICE_RAISE = "raise"
+SERVICE_LOWER = "lower"
+SERVICE_STOP = "stop"

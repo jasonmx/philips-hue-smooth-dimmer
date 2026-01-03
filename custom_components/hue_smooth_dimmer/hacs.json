@@ -1,6 +1,6 @@
 {
-  "name": "Philips Hue Smooth Dimming",
-  "content_id": "hue_smooth_dimming",
+  "name": "Hue Smooth Dimmer",
+  "content_id": "hue_smooth_dimmer",
   "render_readme": true,
   "category": "integration",
   "homeassistant": "2024.1.0"
