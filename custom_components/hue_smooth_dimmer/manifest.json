@@ -1,7 +1,7 @@
 {
   "domain": "hue_smooth_dimmer",
   "name": "Hue Smooth Dimmer",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "config_flow": true,
   "documentation": "https://github.com/jasonmx/ha-hue-smooth-dimmer",
   "issue_tracker": "https://github.com/jasonmx/ha-hue-smooth-dimmer/issues",
