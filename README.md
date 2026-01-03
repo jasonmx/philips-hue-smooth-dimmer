@@ -1,10 +1,10 @@
-# Hue Smooth Dimmer
+# Philips Hue Smooth Dimmer
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
-Dim your Philips Hue bulbs smoothly in automations and with non-Hue buttons.
+Dim your Hue bulbs smoothly in automations and with non-Hue buttons.
 
-This integration eliminates the visual stuttering and network congestion caused by traditional "stepped" dimming loops, by leveraging the native capabilities of the Hue V2 API.
+This integration eliminates the visual stuttering and network congestion caused by traditional "stepped" dimming loops, by leveraging the native capabilities of the Philips Hue V2 API.
 
 ## Key Benefits 🔅💡🔆
 
@@ -14,9 +14,11 @@ This integration eliminates the visual stuttering and network congestion caused 
 
 ---
 
-## Installation
+## Requirements:
+* **Hardware:** Philips Hue Bridge V2 (Square version). Legacy V1 (Circular) bridges are not supported.
+* **[Philips Hue integration](https://www.home-assistant.io/integrations/hue)**
 
-**Dependency:** [Philips Hue integration](https://www.home-assistant.io/integrations/hue) installed and connected to a V2 bridge.
+## Installation
 
 ### Method 1: HACS (Recommended)
 
@@ -59,13 +61,13 @@ Initiates a smooth transition toward a lower brightness level.
 | `turn_off_at_zero` | `false` | Turn off the light if a transition reaches 0% brightness. |
 
 ### `hue_smooth_dimmer.stop`
-Immediately halts an active transition. The integration calculates the current "in-flight" brightness to ensure the next move starts exactly where the light stopped.
+Stops an active transition.
 
 ---
 
 ## Example Usage
 
-To achieve a Pro dimming experience with a button remote like the Aqara Opple or IKEA TRÅDFRI:
+To dim your Hue lights smoothly with a button remote like the Aqara Opple or IKEA TRÅDFRI:
 
 **Automation: Start Dimming Up on Button Hold**
 ```yaml
@@ -73,8 +75,6 @@ action:
   - service: hue_smooth_dimmer.raise
     target:
       entity_id: light.living_room
-    data:
-      sweep_time: 6
 ```
 
 **Automation: Stop Dimming on Button Release**

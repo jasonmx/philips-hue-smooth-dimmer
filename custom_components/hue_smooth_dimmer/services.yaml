@@ -1,6 +1,6 @@
 raise:
   name: Raise
-  description: Start increasing brightness.
+  description: Start increasing the brightness.
   target:
     entity:
       domain: light
@@ -25,7 +25,7 @@ raise:
 
 lower:
   name: Lower
-  description: Start decreasing brightness.
+  description: Start decreasing the brightness.
   target:
     entity:
       domain: light
@@ -47,16 +47,16 @@ lower:
           min: 0
           max: 99
           unit_of_measurement: "%"
-turn_off_at_zero:
+    turn_off_at_zero:
       name: Off at zero
-      description: Turn off the light if a transition reaches 0% brightness.
+      description: Turn off light if a transition reaches 0% brightness.
       default: false
       selector:
         boolean:
 
 stop:
   name: Stop
-  description: Stop brightness transitions.
+  description: Stop a brightness transition.
   target:
     entity:
       domain: light
