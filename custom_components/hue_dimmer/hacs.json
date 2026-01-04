@@ -1,7 +1,4 @@
 {
   "name": "Philips Hue Smooth Dimmer",
-  "render_readme": true,
-  "category": "integration",
   "homeassistant": "2025.1.0",
-  "zip_release": false
 }
