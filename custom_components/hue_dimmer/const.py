@@ -1,4 +1,4 @@
-DOMAIN = "hue_dimmer"
+DOMAIN = "hue_smooth_dimmer"
 
 SERVICE_RAISE = "raise"
 SERVICE_LOWER = "lower"

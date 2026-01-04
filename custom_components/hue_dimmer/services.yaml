@@ -6,20 +6,21 @@ raise:
       domain: light
   fields:
     sweep_time:
-      name: Sweep time
+      name: Sweep Time
       description: Duration of a full 100-0% transition.
+      default: 5
       selector:
         number:
           min: 1
-          max: 10
+          max: 60
           unit_of_measurement: s
     limit:
-      name: Target brightness
-      description: Stop transition at this brightness (default 100%).
+      name: Target Brightness
+      description: Default is 100%.
       selector:
         number:
           min: 1
-          max: 10
+          max: 100
           unit_of_measurement: "%"
 
 lower:
@@ -30,16 +31,17 @@ lower:
       domain: light
   fields:
     sweep_time:
-      name: Sweep time
+      name: Sweep Time
       description: Duration of a full 0-100% transition.
+      default: 5
       selector:
         number:
           min: 1
           max: 60
           unit_of_measurement: s
     limit:
-      name: Target brightness
-      description: Stop transition at this brightness (default 0%). Use at least 0.2% to keep a light turned on.
+      name: Target Brightness
+      description: Default is 0%. Use 0.2% to keep a Hue light on.
       selector:
         number:
           min: 0
