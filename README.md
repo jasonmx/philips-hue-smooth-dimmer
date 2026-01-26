@@ -4,7 +4,7 @@
 
 Dim your Hue bulbs smoothly in "press to dim, release to stop" automations.
 
-This integration eliminates the visual stuttering caused by "stepped" dimming loops, using native dimming methods in the Philips Hue V2 API.
+This integration eliminates the visual stuttering in HA "stepped" dimming loops, by using Hue's native API dimming methods.
 
 ## Key Benefits 🔅💡🔆
 
@@ -15,7 +15,7 @@ This integration eliminates the visual stuttering caused by "stepped" dimming lo
 ---
 
 ## Requirements:
-* **Hardware:** Philips Hue Bridge V2. Legacy V1 bridges are not supported.
+* **Hardware:** Philips Hue Bridge V2. The original V1 bridge isn't supported as it uses different API dimming methods.
 * **[Philips Hue integration](https://www.home-assistant.io/integrations/hue)** installed.
 
 ## Installation
