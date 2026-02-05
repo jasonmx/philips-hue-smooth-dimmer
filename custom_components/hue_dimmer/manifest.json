@@ -1,14 +1,14 @@
 {
   "domain": "hue_dimmer",
   "name": "Philips Hue Smooth Dimmer",
-  "version": "0.1.0",
-  "config_flow": true,
-  "documentation": "https://github.com/jasonmx/philips-hue-smooth-dimmer",
-  "issue_tracker": "https://github.com/jasonmx/philips-hue-smooth-dimmer/issues",
   "codeowners": ["@jasonmx"],
-  "integration_type": "hub",
-  "single_config_entry": true,
+  "config_flow": true,
   "dependencies": ["hue"],
+  "documentation": "https://github.com/jasonmx/philips-hue-smooth-dimmer",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/jasonmx/philips-hue-smooth-dimmer/issues",
   "requirements": [],
-  "iot_class": "local_push"
+  "single_config_entry": true,
+  "version": "0.1.0"
 }
