@@ -42,24 +42,28 @@ Starts increasing the brightness.
 
 | Field | Default | Description |
 | :--- | :--- | :--- |
-| `target` | (Required) | Hue light(s) or Hue group(s) to control. |
-| `sweep_time` | `5` | Seconds for a full 0-100% transition. |
-| `limit` | `100` | Stop transition at this brightness (default 100%). |
+| `target` | (Required) | Hue light(s) or Hue group(s) |
+| `sweep_time` | `5` | Duration (seconds) of a full 0-100% transition |
+| `limit` | `100` | Maximum brightness (%) |
 
 ### `hue_dimmer.lower`
 Starts decreasing the brightness, and turns off at 0%.
 
 | Field | Default | Description |
 | :--- | :--- | :--- |
-| `target` | (Required) | Hue light(s) or Hue group(s) to control. |
-| `sweep_time` | `5` | Seconds for a full 100-0% transition. |
-| `limit` | `0` | Stop transition at this brightness (default 0%). Choose 0.2% or more to keep a light turned on. |
+| `target` | (Required) | Hue light(s) or Hue group(s) |
+| `sweep_time` | `5` | Duration (seconds) of a full 100-0% transition  |
+| `limit` | `0` | Minimum brightness (%). Choose >= 0.2% to stay turned on (see tip). |
 
 > [!TIP]
 > Hue's minimum supported brightness is 0.2% for regular bulbs and 2.0% for Essential bulbs. Source: [Hueblog post](https://hueblog.com/2025/09/18/new-hue-bulbs-cannot-be-dimmed-any-lower/).
 
 ### `hue_dimmer.stop`
 Stops an active transition.
+
+| Field | Description |
+| :--- | :--- |
+| `target` | Hue light(s) or Hue group(s) |
 
 ---
 
