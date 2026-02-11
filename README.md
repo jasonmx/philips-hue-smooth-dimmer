@@ -9,7 +9,7 @@ This integration eliminates the visual stuttering in HA "stepped" dimming loops,
 ## Key Benefits 🔅💡🔆
 
 * **Silky Smooth:** No more jumpy brightness changes or overshoots in "press to dim" automations. Dimming is continuous and precise, mirroring a high-quality physical dimmer.
-* **Instant Setup:** Piggybacks on the HA core integration to control your existing Hue bridges and lights. 
+* **Instant Setup:** Communicates with your Hue bridges and lights via the core Philips Hue integration. 
 * **Network Friendly:** With less chatter between HA and your lights, your home network and Hue mesh remain responsive and clear.
 
 ---
