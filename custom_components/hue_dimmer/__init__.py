@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import entity_registry as er
 
 from .const import (
+    API_SETTLE_SECONDS,
     DEFAULT_MAX_BRIGHTNESS,
     DEFAULT_MIN_BRIGHTNESS,
     DEFAULT_SWEEP_TIME,
@@ -13,14 +14,13 @@ from .const import (
     SERVICE_LOWER,
     SERVICE_RAISE,
     SERVICE_STOP,
-    STALE_BRIGHTNESS_GUARD_SECONDS,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-# Tracker: { (resource_type, resource_id):
-#            { "time": float, "bright": float, "target": float, "dir": str, "sweep": float } }
-STATE_TRACKER = {}
+# { (resource_type, resource_id):
+#   { "time": float, "bright": float, "target": float, "dir": str, "sweep": float } }
+BRIGHTNESS_CACHE = {}
 
 
 async def get_bridge_and_id(hass: HomeAssistant, entity_id: str):
@@ -62,68 +62,74 @@ async def get_bridge_and_id(hass: HomeAssistant, entity_id: str):
     return bridge, resource_type, resource_id
 
 
-def resolve_current_brightness(tracker_key, api_brightness):
-    # During a dimming transition, the Hue API reports the brightness as though the transition
-    # happened instantaneously. If a transition stops mid-flight, the API takes ~10s to catch up
-    # and correct its reporting.
-    #
-    # The resolver decides whether to trust the API brightness value or to predict its own, to
-    # ensure dim-stop-dim sequences work smoothly. The STATE_TRACKER helper cache tracks
-    # dimming actions and their estimated entry/exit brightnesses during periods when the API
-    # is untrusted.
-
-    # If tracker is empty, we trust the API
-    state = STATE_TRACKER.get(tracker_key)
+def _get_ha_brightness(hass: HomeAssistant, entity_id: str):
+    # Read brightness from HA entity state (0-255) and convert to Hue percentage (0-100).
+    state = hass.states.get(entity_id)
     if not state:
-        return api_brightness
+        return 0.0
+    ha_bright = state.attributes.get("brightness")
+    return (ha_bright / 255 * 100) if ha_bright is not None else 0.0
+
+
+def resolve_current_brightness(tracker_key, reported_brightness):
+    # During a dimming transition, the Hue API (and therefore HA's entity state) reports
+    # brightness as though the transition happened instantaneously. If a transition stops
+    # mid-flight, it takes ~10s to correct its reporting.
+    #
+    # The resolver decides whether to trust the reported brightness or predict its own, to
+    # ensure dim-stop-dim sequences work smoothly. Expired cache entries are pruned inline.
+
+    cached = BRIGHTNESS_CACHE.get(tracker_key)
+    if not cached:
+        return reported_brightness
 
     now = time.time()
-    elapsed = now - state["time"]  # Elapsed time since last tracker entry
+    elapsed = now - cached["time"]
 
-    # If the guard window has expired, we trust the API and clear the tracker
-    if elapsed > STALE_BRIGHTNESS_GUARD_SECONDS:
-        STATE_TRACKER.pop(tracker_key, None)
-        return api_brightness
+    # Dynamic guard window: sweep duration + API settle buffer for active transitions,
+    # just the settle buffer for stopped entries.
+    guard_seconds = cached["sweep"] + API_SETTLE_SECONDS if cached["dir"] != "none" else API_SETTLE_SECONDS
 
-    # During the guard window, we distrust the API and predict the brightness.
+    # Guard expired — trust the reported brightness and prune the cache entry
+    if elapsed > guard_seconds:
+        BRIGHTNESS_CACHE.pop(tracker_key, None)
+        return reported_brightness
 
-    # CASE 1: No active transition (Direction is 'none')
-    if state["dir"] == "none":
+    # Guard active — predict brightness instead of trusting the report.
+
+    # Stopped: return the cached brightness from when we stopped
+    if cached["dir"] == "none":
         _LOGGER.debug(
-            "TRACKER [%s]: Guard active (Stationary). Ignoring API %.1f%%. Staying at %.1f%%",
+            "CACHE [%s]: Guard active (Stationary). Ignoring reported %.1f%%. Staying at %.1f%%",
             tracker_key,
-            api_brightness,
-            state["bright"],
+            reported_brightness,
+            cached["bright"],
         )
-        return state["bright"]
+        return cached["bright"]
 
-    # CASE 2: Active transition in progress
-    safe_sweep = max(state["sweep"], 0.1)  # Input validation
-    change = (100.0 / safe_sweep) * elapsed  # Estimate brightness change since last tracker entry
+    # Moving: extrapolate brightness based on elapsed time
+    safe_sweep = max(cached["sweep"], 0.1)
+    change = (100.0 / safe_sweep) * elapsed
 
-    if state["dir"] == "up":
-        predicted = min(state["bright"] + change, state["target"])
+    if cached["dir"] == "up":
+        predicted = min(cached["bright"] + change, cached["target"])
     else:
-        predicted = max(state["bright"] - change, state["target"])
+        predicted = max(cached["bright"] - change, cached["target"])
 
     _LOGGER.debug(
-        "TRACKER [%s]: Guard active (Moving). API: %.1f%%, Predicted: %.1f%%", tracker_key, api_brightness, predicted
+        "CACHE [%s]: Guard active (Moving). Reported: %.1f%%, Predicted: %.1f%%",
+        tracker_key,
+        reported_brightness,
+        predicted,
     )
 
     return predicted
 
 
-async def start_transition(bridge, resource_type, resource_id, direction, sweep, limit):
+async def start_transition(hass, bridge, resource_type, resource_id, entity_id, direction, sweep, limit):
     tracker_key = (resource_type, resource_id)
-    try:
-        response = await bridge.api.request("get", f"clip/v2/resource/{resource_type}/{resource_id}")
-        real_data = response[0] if isinstance(response, list) else response
-        api_bright = float(real_data.get("dimming", {}).get("brightness", 0.0))
-    except Exception as e:
-        _LOGGER.error("Failed to fetch state for %s: %s", resource_id, e)
-        return
-
-    current_bright = resolve_current_brightness(tracker_key, api_bright)
+    reported_bright = _get_ha_brightness(hass, entity_id)
+    current_bright = resolve_current_brightness(tracker_key, reported_bright)
     distance = abs(limit - current_bright)
     dur_ms = int(distance * sweep * 10)  # 1000ms / 100% = 10ms/%
 
@@ -132,7 +138,7 @@ async def start_transition(bridge, resource_type, resource_id, direction, sweep,
     if distance < 0.2:  # Min brightness step is 0.2%
         return
 
-    STATE_TRACKER[tracker_key] = {
+    BRIGHTNESS_CACHE[tracker_key] = {
         "time": time.time(),
         "bright": current_bright,
         "target": limit,
@@ -146,30 +152,13 @@ async def start_transition(bridge, resource_type, resource_id, direction, sweep,
     elif direction == "down" and limit == 0.0:
         payload["on"] = {"on": False}  # Turn off light after fading to 0% brightness
 
-    await bridge.api.request("put", f"clip/v2/resource/{resource_type}/{resource_id}", json=payload)
-
-
-async def _fetch_current_brightness(bridge, resource_type, resource_id):
-    # Get brightness from Hue API
     try:
-        response = await bridge.api.request("get", f"clip/v2/resource/{resource_type}/{resource_id}")
-        response_data = response[0] if isinstance(response, list) else response
-        return float(response_data.get("dimming", {}).get("brightness", 0.0))
-    except Exception:
-        return 0.0
-
-
-def _prune_tracker():
-    # Clean the tracker to prevent memory leaks.
-    now = time.time()
-    to_delete = [key for key, state in STATE_TRACKER.items() if (now - state["time"]) > STALE_BRIGHTNESS_GUARD_SECONDS]
-    for key in to_delete:
-        del STATE_TRACKER[key]
+        await bridge.api.request("put", f"clip/v2/resource/{resource_type}/{resource_id}", json=payload)
+    except Exception as exc:
+        _LOGGER.debug("Transition command ignored for %s: %s", resource_id, exc)
 
 
 async def _handle_transition(hass: HomeAssistant, call: ServiceCall, direction: str, default_limit: float):
-    _prune_tracker()
-
     sweep = float(call.data.get("sweep_time", DEFAULT_SWEEP_TIME))
     sweep = max(sweep, 0.1)  # Restricts user-supplied value to +ve numbers
     limit = float(call.data.get("limit", default_limit))
@@ -177,7 +166,40 @@ async def _handle_transition(hass: HomeAssistant, call: ServiceCall, direction: 
     for entity_id in call.data.get("entity_id", []):
         bridge, resource_type, resource_id = await get_bridge_and_id(hass, entity_id)
         if bridge and resource_id:
-            await start_transition(bridge, resource_type, resource_id, direction, sweep, limit)
+            await start_transition(hass, bridge, resource_type, resource_id, entity_id, direction, sweep, limit)
+
+
+async def _handle_stop(hass: HomeAssistant, call: ServiceCall):
+    for entity_id in call.data.get("entity_id", []):
+        bridge, resource_type, resource_id = await get_bridge_and_id(hass, entity_id)
+        if not bridge or not resource_id:
+            continue
+
+        try:
+            await bridge.api.request(
+                "put", f"clip/v2/resource/{resource_type}/{resource_id}", json={"dimming_delta": {"action": "stop"}}
+            )
+        except Exception as exc:
+            _LOGGER.debug("Stop command ignored for %s: %s", resource_id, exc)
+
+        tracker_key = (resource_type, resource_id)
+        reported_bright = _get_ha_brightness(hass, entity_id)
+        final_bright = resolve_current_brightness(tracker_key, reported_bright)
+        old_state = BRIGHTNESS_CACHE.get(tracker_key, {})
+        BRIGHTNESS_CACHE[tracker_key] = {
+            "time": time.time(),
+            "bright": final_bright,
+            "target": old_state.get("target", final_bright),
+            "dir": "none",
+            "sweep": 1.0,
+        }
+
+        _LOGGER.info(
+            "STOP [%s]: Halted at %.1f%% (Guarding against snap to %.1f%%)",
+            resource_id,
+            final_bright,
+            BRIGHTNESS_CACHE[tracker_key]["target"],
+        )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -190,36 +212,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         await _handle_transition(hass, call, "down", DEFAULT_MIN_BRIGHTNESS)
 
     async def handle_stop(call: ServiceCall):
-        _prune_tracker()
-        for entity_id in call.data.get("entity_id", []):
-            bridge, resource_type, resource_id = await get_bridge_and_id(hass, entity_id)
-            if not bridge or not resource_id:
-                continue
-
-            await bridge.api.request(
-                "put", f"clip/v2/resource/{resource_type}/{resource_id}", json={"dimming_delta": {"action": "stop"}}
-            )
-
-            api_bright = await _fetch_current_brightness(bridge, resource_type, resource_id)
-
-            # Predict current brightness and cache it
-            tracker_key = (resource_type, resource_id)
-            final_bright = resolve_current_brightness(tracker_key, api_bright)
-            old_state = STATE_TRACKER.get(tracker_key, {})
-            STATE_TRACKER[tracker_key] = {
-                "time": time.time(),
-                "bright": final_bright,
-                "target": old_state.get("target", final_bright),
-                "dir": "none",
-                "sweep": 1.0,
-            }
-
-            _LOGGER.info(
-                "STOP [%s]: Halted at %.1f%% (Guarding against snap to %.1f%%)",
-                resource_id,
-                final_bright,
-                STATE_TRACKER[tracker_key]["target"],
-            )
+        await _handle_stop(hass, call)
 
     hass.services.async_register(DOMAIN, SERVICE_RAISE, handle_raise)
     hass.services.async_register(DOMAIN, SERVICE_LOWER, handle_lower)
