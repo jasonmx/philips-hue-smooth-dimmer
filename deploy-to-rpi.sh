@@ -7,6 +7,9 @@ echo "Stopping HA..."
 ssh rpi "docker stop homeassistant"
 
 echo "Deploying custom component..."
+ssh rpi "sudo chown -R pi:pi \
+  /home/pi/homeassistant/homeassistant_config/custom_components"
+
 rsync -av --delete \
   --exclude '__pycache__/' \
   --exclude '*.pyc' \
