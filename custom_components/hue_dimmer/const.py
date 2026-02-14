@@ -3,6 +3,7 @@ DOMAIN = "hue_dimmer"
 SERVICE_RAISE = "raise"
 SERVICE_LOWER = "lower"
 SERVICE_STOP = "stop"
+SERVICE_SET_ATTRIBUTES = "set_attributes"
 
 DEFAULT_SWEEP_TIME = 5
 DEFAULT_MAX_BRIGHTNESS = 100.0

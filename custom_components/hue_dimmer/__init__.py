@@ -4,6 +4,7 @@ import time
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.service import async_extract_entity_ids
 
 from .const import (
     API_SETTLE_SECONDS,
@@ -13,6 +14,7 @@ from .const import (
     DOMAIN,
     SERVICE_LOWER,
     SERVICE_RAISE,
+    SERVICE_SET_ATTRIBUTES,
     SERVICE_STOP,
 )
 
@@ -133,7 +135,7 @@ async def start_transition(hass, bridge, resource_type, resource_id, entity_id, 
     distance = abs(limit - current_bright)
     dur_ms = int(distance * sweep * 10)  # 1000ms / 100% = 10ms/%
 
-    _LOGGER.info("CALC [%s]: %.1f%% -> %.1f%% | Dur: %dms", resource_id, current_bright, limit, dur_ms)
+    _LOGGER.debug("CALC [%s]: %.1f%% -> %.1f%% | Dur: %dms", resource_id, current_bright, limit, dur_ms)
 
     if distance < 0.2:  # Min brightness step is 0.2%
         return
@@ -194,12 +196,112 @@ async def _handle_stop(hass: HomeAssistant, call: ServiceCall):
             "sweep": 1.0,
         }
 
-        _LOGGER.info(
+        _LOGGER.debug(
             "STOP [%s]: Halted at %.1f%% (Guarding against snap to %.1f%%)",
             resource_id,
             final_bright,
             BRIGHTNESS_CACHE[tracker_key]["target"],
         )
+
+
+async def _resolve_group_light_ids(bridge, grouped_light_id):
+    # Resolve a grouped_light to its member light resource IDs via Hue REST API.
+    # Chain: grouped_light → owner (room/zone) → children → collect light IDs
+    grouped_light = bridge.api.groups.grouped_light.get(grouped_light_id)
+    if not grouped_light or not grouped_light.owner:
+        return []
+
+    owner_rid = grouped_light.owner.rid
+    owner_rtype = grouped_light.owner.rtype.value  # "room" or "zone"
+
+    resp = await bridge.api.request("get", f"clip/v2/resource/{owner_rtype}/{owner_rid}")
+    if not resp:
+        return []
+
+    # aiohue returns the data array directly (not wrapped in {"data": [...]})
+    item = resp[0] if isinstance(resp, list) else resp
+    children = item.get("children", [])
+    light_ids = []
+    device_ids = []
+
+    for child in children:
+        if child["rtype"] == "light":
+            light_ids.append(child["rid"])
+        elif child["rtype"] == "device":
+            device_ids.append(child["rid"])
+
+    # For device children, find their light services
+    for device_id in device_ids:
+        dev_resp = await bridge.api.request("get", f"clip/v2/resource/device/{device_id}")
+        if dev_resp:
+            dev_item = dev_resp[0] if isinstance(dev_resp, list) else dev_resp
+            for svc in dev_item.get("services", []):
+                if svc["rtype"] == "light":
+                    light_ids.append(svc["rid"])
+
+    return light_ids
+
+
+def _build_set_attributes_payload(hass, entity_id, brightness, color_temp_kelvin):
+    payload = {}
+
+    if brightness is not None:
+        payload["dimming"] = {"brightness": float(brightness)}
+
+    if color_temp_kelvin is not None:
+        state = hass.states.get(entity_id)
+        supported_modes = state.attributes.get("supported_color_modes", []) if state else []
+
+        if "color_temp" not in supported_modes:
+            _LOGGER.warning(
+                "Entity %s does not support color temperature. Skipping CT, sending other attributes.",
+                entity_id,
+            )
+        else:
+            min_k = state.attributes.get("min_color_temp_kelvin", 2000)
+            max_k = state.attributes.get("max_color_temp_kelvin", 6535)
+            clamped_k = max(min_k, min(max_k, color_temp_kelvin))
+            payload["color_temperature"] = {"mirek": round(1_000_000 / clamped_k)}
+
+    return payload
+
+
+async def _send_set_attributes(bridge, resource_type, resource_id, payload):
+    # For groups, send to each individual light so attributes apply even when off.
+    if resource_type == "grouped_light":
+        light_ids = await _resolve_group_light_ids(bridge, resource_id)
+        if not light_ids:
+            _LOGGER.warning("No lights found in group %s", resource_id)
+            return
+    else:
+        light_ids = [resource_id]
+
+    for light_id in light_ids:
+        try:
+            await bridge.api.request("put", f"clip/v2/resource/light/{light_id}", json=payload)
+        except Exception as exc:
+            _LOGGER.error("set_attributes failed for light %s: %s", light_id, exc)
+
+
+async def _handle_set_attributes(hass: HomeAssistant, call: ServiceCall):
+    brightness = call.data.get("brightness")
+    color_temp_kelvin = call.data.get("color_temp_kelvin")
+
+    if brightness is None and color_temp_kelvin is None:
+        _LOGGER.warning("set_attributes called with no attributes to set.")
+        return
+
+    entity_ids = await async_extract_entity_ids(call)
+    for entity_id in entity_ids:
+        if not entity_id.startswith("light."):
+            continue
+        bridge, resource_type, resource_id = await get_bridge_and_id(hass, entity_id)
+        if not bridge or not resource_id:
+            continue
+
+        payload = _build_set_attributes_payload(hass, entity_id, brightness, color_temp_kelvin)
+        if payload:
+            await _send_set_attributes(bridge, resource_type, resource_id, payload)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -214,14 +316,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def handle_stop(call: ServiceCall):
         await _handle_stop(hass, call)
 
+    async def handle_set_attributes(call: ServiceCall):
+        await _handle_set_attributes(hass, call)
+
     hass.services.async_register(DOMAIN, SERVICE_RAISE, handle_raise)
     hass.services.async_register(DOMAIN, SERVICE_LOWER, handle_lower)
     hass.services.async_register(DOMAIN, SERVICE_STOP, handle_stop)
+    hass.services.async_register(DOMAIN, SERVICE_SET_ATTRIBUTES, handle_set_attributes)
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    for svc in [SERVICE_RAISE, SERVICE_LOWER, SERVICE_STOP]:
+    for svc in [SERVICE_RAISE, SERVICE_LOWER, SERVICE_STOP, SERVICE_SET_ATTRIBUTES]:
         hass.services.async_remove(DOMAIN, svc)
     return True
