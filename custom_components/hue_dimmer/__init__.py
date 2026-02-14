@@ -165,14 +165,20 @@ async def _handle_transition(hass: HomeAssistant, call: ServiceCall, direction: 
     sweep = max(sweep, 0.1)  # Restricts user-supplied value to +ve numbers
     limit = float(call.data.get("limit", default_limit))
 
-    for entity_id in call.data.get("entity_id", []):
+    entity_ids = await async_extract_entity_ids(call)
+    for entity_id in entity_ids:
+        if not entity_id.startswith("light."):
+            continue
         bridge, resource_type, resource_id = await get_bridge_and_id(hass, entity_id)
         if bridge and resource_id:
             await start_transition(hass, bridge, resource_type, resource_id, entity_id, direction, sweep, limit)
 
 
 async def _handle_stop(hass: HomeAssistant, call: ServiceCall):
-    for entity_id in call.data.get("entity_id", []):
+    entity_ids = await async_extract_entity_ids(call)
+    for entity_id in entity_ids:
+        if not entity_id.startswith("light."):
+            continue
         bridge, resource_type, resource_id = await get_bridge_and_id(hass, entity_id)
         if not bridge or not resource_id:
             continue
