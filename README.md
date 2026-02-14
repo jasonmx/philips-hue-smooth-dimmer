@@ -2,14 +2,15 @@
 
 [![HACS Default](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz/) ![Version](https://img.shields.io/github/v/release/jasonmx/philips-hue-smooth-dimmer)
 
-Dim your Hue lights smoothly with third-party buttons in "hold to dim" automations.
-
-This integration plugs a feature gap in the core Philips Hue integration, by creating a "stop dimming" action for when you release a button. It also handles brightness limits and sweep time.
+This integration extends the core Philips Hue integration and lets you:
+* Use third-party buttons to dim your Hue lights smoothly.
+* Set brightness and color temperature while lights are off.
 
 ## Key Benefits 🔅💡🔆
 
 * **Silky Smooth:** Dimming is continuous and precise, mirroring a high-quality physical dimmer. No more jittery repeat loops.
-* **Zero Setup:** Connects to your Hue bridges automatically via the core Philips Hue integration.
+* **Pre-Stage Lights:** Prepare your lights to turn on exactly how you want them.
+* **Zero Setup:** Connects to your lights automatically via the core Philips Hue integration.
 
 ---
 
@@ -33,7 +34,7 @@ This integration plugs a feature gap in the core Philips Hue integration, by cre
 
 ## Usage
 
-Use these 3 actions in the Home Assistant automation editor:
+Use these 4 actions in the Home Assistant automation editor:
 
 <details>
 <summary><b>hue_dimmer.raise</b>: Start raising the brightness when you long-press an 'up' button. </summary>
@@ -51,7 +52,7 @@ Use these 3 actions in the Home Assistant automation editor:
 
 | Field | Description |
 | :--- | :--- |
-| `target` | Hue lights & Hue groups |
+| `target` | Hue lights and groups |
 | `sweep_time` | Duration of 100-0% sweep (default 5s)  |
 | `limit` | Minimum brightness limit (default 0%). Light turns off at 0%. Choose 0.2%+ to keep standard Hue lights turned on, and 2%+ for Essential series. |
 
@@ -62,11 +63,22 @@ Use these 3 actions in the Home Assistant automation editor:
 
 | Field | Description |
 | :--- | :--- |
-| `target` | Hue light(s) or Hue group(s) |
+| `target` | Hue lights and groups |
 
 </details>
 
-To dim multiple lights perfectly, target a **Hue Group** instead of separate entities. This enables your Hue Bridge to sync them via a single broadcast message at the start and end of each dimming transition.
+<details>
+<summary><b>hue_dimmer.set_attributes</b>: Set brightness and/or color temperature without turning on.</summary>
+
+| Field | Description |
+| :--- | :--- |
+| `target` | Hue lights and groups |
+| `brightness` | Brightness level, 0.2–100% |
+| `color_temp_kelvin` | Color temperature in Kelvin (CT lights only) |
+
+</details>
+
+To dim multiple lights perfectly, target a **Hue Group** instead of separate lights. This enables your Hue Bridge to sync them via a single broadcast message at the start and end of each dimming transition.
 
 <details>
 <summary>Here's a two-button dimmer example in YAML.</summary>
