@@ -2,100 +2,116 @@
 
 [![HACS Default](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz/) ![Version](https://img.shields.io/github/v/release/jasonmx/philips-hue-smooth-dimmer)
 
-Dim your Hue bulbs smoothly in "press to dim, release to stop" automations.
-
-This integration eliminates the visual stuttering in HA "stepped" dimming loops, using the Hue API's dim-stop methods.
+This integration extends the core Philips Hue integration and lets you:
+* Use third-party buttons to dim your Hue lights smoothly.
+* Set brightness and color temperature while lights are off.
 
 ## Key Benefits 🔅💡🔆
 
-* **Silky Smooth:** No more jumpy brightness changes or overshoots in "press to dim" automations. Dimming is continuous and precise, mirroring a high-quality physical dimmer.
-* **Zero Setup:** Connects to your Hue bridge automatically via the core Philips Hue integration.
-* **Network Friendly:** With less chatter between HA and your lights, your home network and Hue mesh remain responsive and clear.
+* **Silky Smooth:** Dimming is continuous and precise, mirroring a high-quality physical dimmer. No more jittery repeat loops.
+* **Pre-Stage Lights:** Prepare your lights to turn on exactly how you want them.
+* **Zero Setup:** Connects to your lights automatically via the core Philips Hue integration.
 
 ---
 
 ## Requirements:
-* **Hardware:** Philips Hue Bridge V2 or Pro (V3).
-* **[Philips Hue integration](https://www.home-assistant.io/integrations/hue)** installed and configured.
+* **Hardware:** Philips Hue Bridge V2 or Pro (V3)
+* **[Philips Hue integration](https://www.home-assistant.io/integrations/hue)** installed and configured
 
 ## Installation
 
-1. Open HACS repository
+1. Open the Philips Hue Smooth Dimmer HACS repository
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonmx&repository=philips-hue-smooth-dimmer&category=integration)
+[![Open the Philips Hue Smooth Dimmer HACS repository in your Home Assistant instance.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonmx&repository=philips-hue-smooth-dimmer&category=integration)
 
-3. Click **Download**
-4. Restart Home Assistant.
-5. Go to **Settings > Devices & Services**, click **Add Integration** and choose "Philips Hue Smooth Dimmer".
+2. Click **Download**
+3. Restart Home Assistant
+4. Add the integration
+
+[![Add Philips Hue Smooth Dimmer to your Home Assistant instance.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=hue_dimmer)
 
 ---
 
 ## Usage
 
-Add these 3 actions to your automations.
+Use these 4 actions in the Home Assistant automation editor:
 
-### `hue_dimmer.raise`
 <details>
-<summary> Starts increasing the brightness. </summary>
-
-| Field | Default | Description |
-| :--- | :---: | :--- |
-| `target` | (Required) | Hue light(s) or Hue group(s) |
-| `sweep_time` | `5` | Duration (seconds) of a full 0-100% sweep |
-| `limit` | `100` | Maximum brightness limit (%) |
-
-To dim multiple lights, target a Hue Group instead of separate entities. Your bridge then syncs them via a single Zigbee broadcast.
-
-</details>
-
-### `hue_dimmer.lower`
-<details>
-<summary> Starts decreasing the brightness. Light turns off at 0%. </summary>
-
-| Field | Default | Description |
-| :--- | :---: | :--- |
-| `target` | (Required) | Hue light(s) or Hue group(s) |
-| `sweep_time` | `5` | Duration (seconds) of a full 100-0% sweep  |
-| `limit` | `0` | Minimum brightness limit (%). Choose 0.2%+ to keep a light turned on (2.0%+ for Hue Essential). |
-
-To dim multiple lights, target a Hue Group instead of separate entities. Your bridge then syncs them via a single Zigbee broadcast.
-
-</details>
-
-### `hue_dimmer.stop`
-<details>
-<summary> Stops an active transition. </summary>
+<summary><b>hue_dimmer.raise</b>: Start raising the brightness when you long-press an 'up' button. </summary>
 
 | Field | Description |
 | :--- | :--- |
-| `target` | Hue light(s) or Hue group(s) |
+| `target` | Hue lights & Hue groups |
+| `sweep_time` | Duration of 0-100% sweep (default 5s) |
+| `limit` | Maximum brightness limit (default 100%) |
 
 </details>
 
----
+<details>
+<summary><b>hue_dimmer.lower</b>: Start lowering the brightness when you long-press a 'down' button.</summary>
 
-Automation Example
+| Field | Description |
+| :--- | :--- |
+| `target` | Hue lights and groups |
+| `sweep_time` | Duration of 100-0% sweep (default 5s)  |
+| `limit` | Minimum brightness limit (default 0%). Light turns off at 0%. Choose 0.2%+ to keep standard Hue lights turned on, and 2%+ for Essential series. |
 
-To dim your Hue lights smoothly with a two-button remote:
+</details>
+
+<details>
+<summary> <b>hue_dimmer.stop</b>: Freeze the brightness when you release a button. </summary>
+
+| Field | Description |
+| :--- | :--- |
+| `target` | Hue lights and groups |
+
+</details>
+
+<details>
+<summary><b>hue_dimmer.set_attributes</b>: Set brightness and/or color temperature without turning on.</summary>
+
+| Field | Description |
+| :--- | :--- |
+| `target` | Hue lights and groups |
+| `brightness` | Brightness level, 0.2–100% |
+| `color_temp_kelvin` | Color temperature in Kelvin (CT lights only) |
+
+</details>
+
+To dim multiple lights perfectly, target a **Hue Group** instead of separate lights. This enables your Hue Bridge to sync them via a single broadcast message at the start and end of each dimming transition.
+
+<details>
+<summary>Here's a two-button dimmer example in YAML.</summary>
 
 ```yaml
 actions:
   - choose:
-      - conditions: # Hold left button to lower brightness
+
+      # Hold left button to lower brightness
+      - conditions:
           - condition: trigger
             id: long_press_left
         sequence:
           - action: hue_dimmer.lower
             target:
               entity_id: light.living_room
-      - conditions: # Hold right button to raise brightness
+            data:
+              sweep_time: 4
+              limit: 0.2
+
+      # Hold right button to raise brightness
+      - conditions:
           - condition: trigger
             id: long_press_right
         sequence:
           - action: hue_dimmer.raise
             target:
               entity_id: light.living_room
-      - conditions: # Release button to stop brightness transition
+            data:
+              sweep_time: 4
+
+      # Release button to stop
+      - conditions:
           - condition: trigger
             id:
               - release_left
@@ -105,3 +121,16 @@ actions:
             target:
               entity_id: light.living_room
 ```
+</details>
+
+---
+
+## Uninstall
+
+This integration follows standard integration removal.
+
+1. Open the integration
+
+[![Open the Philips Hue Smooth Dimmer integration in your Home Assistant instance.](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=hue_dimmer)
+
+2. Click the ⋮ menu and choose **Delete**
