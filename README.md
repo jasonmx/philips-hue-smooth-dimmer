@@ -1,6 +1,6 @@
 # Philips Hue Smooth Dimmer
 
-[![HACS Default](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz/) ![Installs](https://img.shields.io/badge/dynamic/json?color=blue&label=Installs&query=hue_dimmer.total&url=https://analytics.home-assistant.io/custom_integrations.json) ![Latest Version](https://img.shields.io/github/v/release/jasonmx/philips-hue-smooth-dimmer)
+[![HACS Default](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz/) ![Installs](https://img.shields.io/badge/dynamic/json?color=blue&label=Installs&query=hue_dimmer.total&url=https://analytics.home-assistant.io/custom_integrations.json) [![Latest Version](https://img.shields.io/github/v/release/jasonmx/philips-hue-smooth-dimmer)](https://github.com/jasonmx/philips-hue-smooth-dimmer/releases)
 
 This integration extends the core Philips Hue integration and lets you:
 * Use third-party buttons to dim your Hue lights smoothly.
@@ -68,12 +68,12 @@ buttons_released:
 ### Set Brightness, Color & Color Temperature While Light Is Off
 
 * Eliminate color flashes and brightness extremes when lights turn on
-* Apply a consistent turn-on behavior across your home and automations
+* Create consistent turn-on behavior across your home and automations
 
 | Action | Description |
 | :--- | :--- |
-| `hue_dimmer.set_attributes` | Set brightness, color temp, or color without turning on |
-| `hue_dimmer.get_attributes` | Get brightness, color temp and color (RGB, HS, XY), even while lights are off. Returns one record per target |
+| `hue_dimmer.set_attributes` | Set brightness, color temp or color without changing on/off state |
+| `hue_dimmer.get_attributes` | Get brightness, color temp and color (RGB, HS, XY), even if lights are off. Returns one record per target |
 
 | Field | Description |
 | :--- | :--- |
