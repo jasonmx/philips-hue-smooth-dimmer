@@ -70,7 +70,7 @@ stop:
 
 set_attributes:
   name: Set attributes
-  description: Set brightness, color temperature, and color without turning on.
+  description: Set brightness, color temp, or color without changing on/off state.
   target:
     entity:
       domain: light
@@ -160,7 +160,7 @@ set_attributes:
 
 get_attributes:
   name: Get attributes
-  description: Get brightness, color temp, and color (RGB, HS, XY), even when lights are off.
+  description: Get brightness, color temp, and color (RGB, HS, XY), even if lights are off. Returns one record per target.
   target:
     entity:
       domain: light
