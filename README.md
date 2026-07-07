@@ -1,6 +1,6 @@
 # Philips Hue Smooth Dimmer
 
-[![HACS Default](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz/) ![Installs](https://img.shields.io/badge/dynamic/json?color=blue&label=Installs&query=hue_dimmer.total&url=https://analytics.home-assistant.io/custom_integrations.json) [![Latest Version](https://img.shields.io/github/v/release/jasonmx/philips-hue-smooth-dimmer)](https://github.com/jasonmx/philips-hue-smooth-dimmer/releases)
+[![HACS Default](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz/) ![Installs](https://img.shields.io/badge/dynamic/json?color=blue&label=Installs&query=hue_dimmer.total&url=https://analytics.home-assistant.io/custom_integrations.json) [![Latest Version](https://img.shields.io/github/v/release/jasonmx/philips-hue-smooth-dimmer?sort=date)](https://github.com/jasonmx/philips-hue-smooth-dimmer/releases)
 
 This integration extends the core Philips Hue integration and lets you:
 * Use third-party buttons to dim your Hue lights smoothly.
